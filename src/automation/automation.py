@@ -1,5 +1,12 @@
 import logging
 import time
+import sys
+import os
+
+# Add src to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from audit.audit import AuditLogger
 
 try:
     from selenium import webdriver
@@ -21,6 +28,7 @@ logger = logging.getLogger(__name__)
 class UIAutomation:
     def __init__(self, driver_path=None, max_retries=3):
         self.max_retries = max_retries
+        self.audit = AuditLogger()
         try:
             from selenium import webdriver
             options = webdriver.ChromeOptions()
@@ -93,6 +101,10 @@ class UIAutomation:
             # Wait for confirmation
             WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.ID, 'confirmation')))
             logger.info(f"Rebooked shipment {shipment_id} to {new_route}")
+
+            # Log execution in audit ledger
+            self.audit.log_decision(shipment_id, new_route, "executed", {"action": "rebooking"})
+
             return True
 
         return self._retry_action(_rebook)

@@ -1,4 +1,11 @@
 import logging
+import sys
+import os
+
+# Add src to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from audit.audit import AuditLogger
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -8,6 +15,7 @@ class ReasoningEngine:
         self.cost_weight = cost_weight
         self.time_weight = time_weight
         self.compliance_weight = compliance_weight
+        self.audit = AuditLogger()
 
     def evaluate_risk(self, shipment_data, weather_data, strike_data):
         """
@@ -58,6 +66,11 @@ class ReasoningEngine:
         # Sort by score (lower is better)
         scored_proposals.sort(key=lambda x: x['score'])
         logger.info(f"Generated {len(scored_proposals)} rerouting proposals")
+
+        # Log proposals in audit ledger
+        for prop in scored_proposals:
+            self.audit.log_decision("unknown_shipment", prop['route'], "proposed", {"score": prop['score'], "cost": prop['cost'], "time": prop['time'], "compliance": prop['compliance']})
+
         return scored_proposals
 
 def main():
