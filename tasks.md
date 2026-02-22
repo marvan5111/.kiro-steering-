@@ -1,33 +1,49 @@
 # Tasks.md
 
-## Data Ingestion Layer
-- Implement connectors to ingest shipment feeds.
-- Integrate weather alerts and strike news via APIs.
-- Set up monitoring agent with AWS CloudWatch/Lambda.
+## Requirements-to-Design-to-Tasks Mapping
 
-## Reasoning Engine
-- Build AI reasoning module using Amazon Nova 2 Lite.
-- Define logic for evaluating rerouting options (cost, time, compliance).
-- Implement trade-off analysis and decision scoring.
+### Reliability
+- Requirement: When shipment data is updated, the system shall automatically check for risks.
+  - Design: Data Ingestion Layer + Reasoning Engine
+  - Tasks:
+    - Implement connectors for shipment feeds
+    - Build risk evaluation logic in reasoning engine
+    - Set up monitoring agent with CloudWatch/Lambda
 
-## UI Automation Layer
-- Develop automation scripts with Nova Act or Selenium.
-- Handle login workflows for legacy portals.
-- Scrape shipment status and rebook shipments when APIs are unavailable.
-- Add retry logic for failed automation attempts.
+- Requirement: When external signals are received, the system shall evaluate their impact.
+  - Design: MCP connectors + Reasoning Engine
+  - Tasks:
+    - Integrate weather API
+    - Integrate strike/news API
+    - Feed signals into reasoning engine
 
-## Blockchain Audit Layer
-- Configure Amazon Managed Blockchain.
-- Record rerouting decisions immutably.
-- Store reasoning traces, shipment IDs, and approval status.
-- Build query interface for auditors.
+### Automation
+- Requirement: When a disruption is detected, the system shall propose rerouting options.
+  - Design: Reasoning Engine
+  - Tasks:
+    - Define rerouting logic (cost, time, compliance)
+    - Implement trade-off scoring
+    - Generate rerouting proposals
 
-## Notification Layer
-- Integrate Slack API for human approval notifications.
-- Format messages with shipment details and rerouting proposals.
-- Log approval/rejection outcomes.
+- Requirement: Where no API exists, the system shall use UI automation.
+  - Design: UI Automation Layer
+  - Tasks:
+    - Build Selenium/Nova Act scripts
+    - Handle login workflows
+    - Scrape shipment status
+    - Automate rebooking
 
-## Dashboard UI
-- Build frontend with AWS Amplify or React.
-- Display shipment status, rerouting history, and audit logs.
-- Provide filters for auditors to review past decisions.
+### Auditability
+- Requirement: The system shall record every rerouting decision on blockchain.
+  - Design: Blockchain Audit Layer
+  - Tasks:
+    - Configure Amazon Managed Blockchain
+    - Write decision logs immutably
+    - Store reasoning traces and shipment IDs
+
+- Requirement: The system shall provide an auditor-friendly dashboard.
+  - Design: Dashboard UI
+  - Tasks:
+    - Build React/AWS Amplify frontend
+    - Display shipment history and audit logs
+    - Add filters for auditors
