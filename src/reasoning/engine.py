@@ -6,6 +6,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from audit.audit import AuditLogger
+from notifications.notifications import NotificationManager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class ReasoningEngine:
         logger.info(f"Overall risk score: {risk_score}")
         return risk_score
 
-    def generate_rerouting_proposals(self, current_route, risk_score):
+    def generate_rerouting_proposals(self, shipment_id, current_route, risk_score):
         """
         Generate rerouting options if risk > threshold.
         Each proposal has cost, time, compliance score.
@@ -69,7 +70,11 @@ class ReasoningEngine:
 
         # Log proposals in audit ledger
         for prop in scored_proposals:
-            self.audit.log_decision("unknown_shipment", prop['route'], "proposed", {"score": prop['score'], "cost": prop['cost'], "time": prop['time'], "compliance": prop['compliance']})
+            self.audit.log_decision(shipment_id, prop['route'], "proposed", {"score": prop['score'], "cost": prop['cost'], "time": prop['time'], "compliance": prop['compliance']})
+
+        # Send notification to Slack
+        notifications = NotificationManager()
+        notifications.send_rerouting_proposal(shipment_id, scored_proposals)
 
         return scored_proposals
 
@@ -81,7 +86,7 @@ def main():
     strike = {"strikes": [{"impact": "high"}]}
 
     risk = engine.evaluate_risk(shipment, weather, strike)
-    proposals = engine.generate_rerouting_proposals("current_route", risk)
+    proposals = engine.generate_rerouting_proposals("12345", "current_route", risk)
     return {"risk": risk, "proposals": proposals}
 
 if __name__ == "__main__":
