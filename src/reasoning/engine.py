@@ -4,10 +4,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ReasoningEngine:
-    def __init__(self):
-        self.cost_weight = 0.4
-        self.time_weight = 0.4
-        self.compliance_weight = 0.2
+    def __init__(self, cost_weight=0.4, time_weight=0.4, compliance_weight=0.2):
+        self.cost_weight = cost_weight
+        self.time_weight = time_weight
+        self.compliance_weight = compliance_weight
 
     def evaluate_risk(self, shipment_data, weather_data, strike_data):
         """
