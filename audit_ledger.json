@@ -1,0 +1,146 @@
+[
+    {
+        "data": {
+            "shipment_id": "12345",
+            "rerouting_option": "Alternative Route B",
+            "approval_status": "proposed",
+            "reasoning_trace": {
+                "score": 1.06,
+                "cost": 1.2,
+                "time": 0.95,
+                "compliance": 1.0
+            },
+            "timestamp": "2026-02-22T14:58:21.633247+00:00",
+            "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "hash": "6775aa1a61ea4cd4d1d96a9888d7e115b75db116afd0a296d532a2ef55dd1e68"
+    },
+    {
+        "data": {
+            "shipment_id": "12345",
+            "rerouting_option": "Alternative Route A",
+            "approval_status": "proposed",
+            "reasoning_trace": {
+                "score": 1.0822222222222224,
+                "cost": 1.1,
+                "time": 1.05,
+                "compliance": 0.9
+            },
+            "timestamp": "2026-02-22T14:58:21.636938+00:00",
+            "previous_hash": "6775aa1a61ea4cd4d1d96a9888d7e115b75db116afd0a296d532a2ef55dd1e68"
+        },
+        "hash": "fd530cb2e94805e34e99eacf66e53ab5c61d0c4abd1ccb0bfc66a30d2b4d8193"
+    },
+    {
+        "data": {
+            "shipment_id": "12345",
+            "rerouting_option": "Alternative Route C",
+            "approval_status": "proposed",
+            "reasoning_trace": {
+                "score": 1.09,
+                "cost": 0.9,
+                "time": 1.2,
+                "compliance": 0.8
+            },
+            "timestamp": "2026-02-22T14:58:21.639819+00:00",
+            "previous_hash": "fd530cb2e94805e34e99eacf66e53ab5c61d0c4abd1ccb0bfc66a30d2b4d8193"
+        },
+        "hash": "b6a12d6650962f71eda91ea8f62ebd05185ebc6ce8e99b310cb63d9c47c77c08"
+    },
+    {
+        "data": {
+            "shipment_id": "12345",
+            "rerouting_option": "Alternative Route B",
+            "approval_status": "proposed",
+            "reasoning_trace": {
+                "score": 1.06,
+                "cost": 1.2,
+                "time": 0.95,
+                "compliance": 1.0
+            },
+            "timestamp": "2026-02-22T15:08:34.696006+00:00",
+            "previous_hash": "b6a12d6650962f71eda91ea8f62ebd05185ebc6ce8e99b310cb63d9c47c77c08"
+        },
+        "hash": "b4da6e19436255d92a4d034730f2ce34c2dcaf2a70dd76d32e640d5e617538ae"
+    },
+    {
+        "data": {
+            "shipment_id": "12345",
+            "rerouting_option": "Alternative Route A",
+            "approval_status": "proposed",
+            "reasoning_trace": {
+                "score": 1.0822222222222224,
+                "cost": 1.1,
+                "time": 1.05,
+                "compliance": 0.9
+            },
+            "timestamp": "2026-02-22T15:08:34.697117+00:00",
+            "previous_hash": "b4da6e19436255d92a4d034730f2ce34c2dcaf2a70dd76d32e640d5e617538ae"
+        },
+        "hash": "51f346f7114c10f407a7a8c72fa0dd38de8b5763fb68cb25c5bd98d0061aa29a"
+    },
+    {
+        "data": {
+            "shipment_id": "12345",
+            "rerouting_option": "Alternative Route C",
+            "approval_status": "proposed",
+            "reasoning_trace": {
+                "score": 1.09,
+                "cost": 0.9,
+                "time": 1.2,
+                "compliance": 0.8
+            },
+            "timestamp": "2026-02-22T15:08:34.698163+00:00",
+            "previous_hash": "51f346f7114c10f407a7a8c72fa0dd38de8b5763fb68cb25c5bd98d0061aa29a"
+        },
+        "hash": "7e66476e5d6844e364a63139443ee870c91205b30c8ce32428702011c0e734e4"
+    },
+    {
+        "data": {
+            "shipment_id": "12345",
+            "rerouting_option": "Alternative Route B",
+            "approval_status": "proposed",
+            "reasoning_trace": {
+                "score": 1.06,
+                "cost": 1.2,
+                "time": 0.95,
+                "compliance": 1.0
+            },
+            "timestamp": "2026-02-22T15:08:52.410667+00:00",
+            "previous_hash": "7e66476e5d6844e364a63139443ee870c91205b30c8ce32428702011c0e734e4"
+        },
+        "hash": "4fb09b2ccbcb91b3d5d2616aaa4be96898a7837c39c4013d57970556f5f93672"
+    },
+    {
+        "data": {
+            "shipment_id": "12345",
+            "rerouting_option": "Alternative Route A",
+            "approval_status": "proposed",
+            "reasoning_trace": {
+                "score": 1.0822222222222224,
+                "cost": 1.1,
+                "time": 1.05,
+                "compliance": 0.9
+            },
+            "timestamp": "2026-02-22T15:08:52.411756+00:00",
+            "previous_hash": "4fb09b2ccbcb91b3d5d2616aaa4be96898a7837c39c4013d57970556f5f93672"
+        },
+        "hash": "5203d17d8e0358379eb52928892e9d07243c9fcd265e5f2af4bf6824612dffb8"
+    },
+    {
+        "data": {
+            "shipment_id": "12345",
+            "rerouting_option": "Alternative Route C",
+            "approval_status": "proposed",
+            "reasoning_trace": {
+                "score": 1.09,
+                "cost": 0.9,
+                "time": 1.2,
+                "compliance": 0.8
+            },
+            "timestamp": "2026-02-22T15:08:52.412704+00:00",
+            "previous_hash": "5203d17d8e0358379eb52928892e9d07243c9fcd265e5f2af4bf6824612dffb8"
+        },
+        "hash": "14a402d4a428de8b947a9cfbb24ea0e08106a8e3339816b80885bbaaa2831b27"
+    }
+]
