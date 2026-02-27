@@ -22,8 +22,12 @@ def main():
     print(f"Total time: {total_time:.2f} seconds")
     print(f"Average time per prompt: {total_time / len(results):.2f} seconds")
     for result in results:
-        status = "Success" if result['response'] else "Failed"
-        print(f"Prompt {result['prompt_index']}: {status} - Response length: {len(result['response']['outputText']) if result['response'] else 0}")
+        status = "Success" if result['response'] and 'error' not in result['response'] else "Failed"
+        response_text = result['response']['outputText'] if result['response'] and 'outputText' in result['response'] else (result['response']['error'] if result['response'] and 'error' in result['response'] else 'No response')
+        print(f"Prompt {result['prompt_index']}: {status} - Response: {response_text[:100]}...")
+
+    # Generate visualization
+    engine.audit.generate_batch_prompts_visualization()
 
 if __name__ == "__main__":
     main()

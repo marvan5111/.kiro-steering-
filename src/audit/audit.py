@@ -3,6 +3,11 @@ import json
 import logging
 import boto3
 from datetime import datetime, timezone
+try:
+    import matplotlib.pyplot as plt
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -110,6 +115,62 @@ class AuditLogger:
                 return False
         logger.info("Ledger integrity verified")
         return True
+
+    def generate_visualization(self, output_file='chart.png'):
+        """
+        Generate charts from reasoning traces (cost vs. time vs. compliance).
+        """
+        if not HAS_MATPLOTLIB:
+            logger.warning("Matplotlib not installed, skipping visualization")
+            return
+        costs = []
+        times = []
+        compliances = []
+        for entry in self.ledger:
+            data = entry['data']
+            if 'reasoning_trace' in data and isinstance(data['reasoning_trace'], dict):
+                trace = data['reasoning_trace']
+                if 'cost' in trace and 'time' in trace and 'compliance' in trace:
+                    costs.append(trace['cost'])
+                    times.append(trace['time'])
+                    compliances.append(trace['compliance'])
+        if not costs:
+            logger.info("No shipment data for visualization")
+            return
+        fig, ax = plt.subplots()
+        ax.scatter(costs, times, c=compliances, cmap='viridis', alpha=0.6)
+        ax.set_xlabel('Cost')
+        ax.set_ylabel('Time')
+        ax.set_title('Cost vs Time vs Compliance')
+        plt.colorbar(ax.collections[0], label='Compliance')
+        plt.savefig(output_file)
+        logger.info(f"Visualization saved to {output_file}")
+
+    def generate_batch_prompts_visualization(self, output_file='batch_prompts_chart.png'):
+        """
+        Generate bar chart for batch prompts success/failure rates.
+        """
+        if not HAS_MATPLOTLIB:
+            logger.warning("Matplotlib not installed, skipping visualization")
+            return
+        success_count = 0
+        fail_count = 0
+        for entry in self.ledger:
+            data = entry['data']
+            if 'shipment_id' in data and data['shipment_id'].startswith('batch_prompt_'):
+                if data['approval_status'] == 'completed':
+                    success_count += 1
+                elif data['approval_status'] == 'failed':
+                    fail_count += 1
+        if success_count == 0 and fail_count == 0:
+            logger.info("No batch prompt data for visualization")
+            return
+        fig, ax = plt.subplots()
+        ax.bar(['Successful', 'Failed'], [success_count, fail_count], color=['green', 'red'])
+        ax.set_ylabel('Number of Prompts')
+        ax.set_title('Batch Prompts Processing Results')
+        plt.savefig(output_file)
+        logger.info(f"Batch prompts visualization saved to {output_file}")
 
 def main():
     audit = AuditLogger()

@@ -44,7 +44,7 @@ class ReasoningEngine:
             }
         except Exception as e:
             logger.error(f"Nova call failed: {e}")
-            return None
+            return {'error': str(e), 'modelId': "amazon.nova-pro", 'region': self.nova.meta.region_name}
 
     def evaluate_risk(self, shipment_data, weather_data, strike_data, shipment_id=None):
         """
@@ -169,16 +169,17 @@ class ReasoningEngine:
         for i, prompt in enumerate(prompts):
             logger.info(f"Processing prompt {i+1}/{len(prompts)}: {prompt[:50]}...")
             nova_response = self.call_nova(prompt)
-            if nova_response:
+            if nova_response and 'error' not in nova_response:
                 # Log the decision
                 shipment_id = f"batch_prompt_{i+1}"
                 self.audit.log_decision(shipment_id, "nova_response", "completed", {"prompt": prompt, "nova_response": nova_response})
                 results.append({"prompt_index": i+1, "prompt": prompt, "response": nova_response})
             else:
-                # Log failed
+                # Log failed with error details
+                error_details = nova_response.get('error', 'Unknown error') if nova_response else 'Nova call failed'
                 shipment_id = f"batch_prompt_{i+1}"
-                self.audit.log_decision(shipment_id, "nova_response", "failed", {"prompt": prompt, "error": "Nova call failed"})
-                results.append({"prompt_index": i+1, "prompt": prompt, "response": None})
+                self.audit.log_decision(shipment_id, "nova_response", "failed", {"prompt": prompt, "error": error_details})
+                results.append({"prompt_index": i+1, "prompt": prompt, "response": nova_response})
         logger.info(f"Batch processing completed: {len(results)} prompts processed")
         return results
 
