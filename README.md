@@ -115,3 +115,19 @@ Follow this step-by-step flow to demonstrate the full pipeline:
 
 5. **Slack Receives Nova-Powered Summaries**: Interactive message with human-friendly text and approval buttons.
    - Expected Output: Slack message as above, with buttons for approval/rejection. Approvals trigger callbacks and further logging.
+
+### Nova Script Demo
+
+To showcase Nova's direct integration:
+
+1. **Show Prompt in VS Code**: Open `nova_script.py` and highlight the prompt variable (e.g., "Explain the importance of AI in supply chain management.").
+
+2. **Run nova_script.py**: Execute `python nova_script.py` in the terminal.
+   - Expected Output: Nova's response printed in the terminal, e.g., "AI enhances supply chain efficiency by predicting disruptions and optimizing routes."
+
+3. **Show Nova’s Response in Terminal**: The response appears live in the terminal.
+
+4. **Open audit_ledger.json**: Navigate to `audit_ledger.json` in the project root.
+   - Highlight the new entry: Shows logged decision with metadata including modelId ("amazon.nova-pro"), region (e.g., "us-east-1"), stopReason, usage, and compliance summary.
+
+5. **Frame it as**: “Every AI decision is logged for compliance and traceability. The ledger includes full metadata from the Nova call, ensuring transparency and auditability.”
