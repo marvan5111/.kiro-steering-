@@ -19,7 +19,8 @@ class ReasoningEngine:
         self.time_weight = time_weight
         self.compliance_weight = compliance_weight
         self.audit = AuditLogger()
-        self.nova = boto3.client("bedrock-runtime")
+        session = boto3.Session()
+        self.nova = session.client("bedrock-runtime", region_name="us-east-1")
 
     def call_nova(self, prompt):
         """
@@ -45,7 +46,7 @@ class ReasoningEngine:
             logger.error(f"Nova call failed: {e}")
             return None
 
-    def evaluate_risk(self, shipment_data, weather_data, strike_data):
+    def evaluate_risk(self, shipment_data, weather_data, strike_data, shipment_id=None):
         """
         Evaluate risk based on external signals using Nova for predictive scoring.
         Returns a dict with 'score' (0-1, higher means higher risk) and 'explanation'.
@@ -84,9 +85,13 @@ class ReasoningEngine:
                     explanation = exp_line[0].split(':', 1)[1].strip()
             except:
                 logger.warning("Failed to parse Nova response, using fallback")
+        else:
+            if shipment_id:
+                # Log failed decision
+                self.audit.log_decision(shipment_id, "risk_evaluation", "failed", {"error": "Nova call failed for risk evaluation"})
 
         logger.info(f"Overall risk score: {risk_score}, Explanation: {explanation}")
-        return {'score': risk_score, 'explanation': explanation}
+        return {'score': risk_score, 'explanation': explanation, 'nova_response': nova_response}
 
     def generate_rerouting_proposals(self, shipment_id, current_route, risk_data):
         """
@@ -119,13 +124,63 @@ class ReasoningEngine:
 
         # Log proposals in audit ledger
         for prop in scored_proposals:
-            self.audit.log_decision(shipment_id, prop['route'], "proposed", {"score": prop['score'], "cost": prop['cost'], "time": prop['time'], "compliance": prop['compliance'], "risk_explanation": explanation})
+            self.audit.log_decision(shipment_id, prop['route'], "proposed", {"score": prop['score'], "cost": prop['cost'], "time": prop['time'], "compliance": prop['compliance'], "risk_explanation": explanation, "nova_response": risk_data.get('nova_response')})
 
         # Send notification to Slack
         notifications = NotificationManager()
         notifications.send_rerouting_proposal(shipment_id, scored_proposals, explanation)
 
         return scored_proposals
+
+    def process_batch_shipments(self, shipments):
+        """
+        Process a batch of shipments sequentially.
+        shipments: list of dicts, each with 'id', 'shipment_data', 'weather_data', 'strike_data'
+        """
+        results = []
+        for shipment in shipments:
+            shipment_id = shipment['id']
+            shipment_data = shipment['shipment_data']
+            weather_data = shipment['weather_data']
+            strike_data = shipment['strike_data']
+            logger.info(f"Processing shipment {shipment_id}")
+            risk = self.evaluate_risk(shipment_data, weather_data, strike_data, shipment_id)
+            proposals = self.generate_rerouting_proposals(shipment_id, "current_route", risk)
+            results.append({"shipment_id": shipment_id, "risk": risk, "proposals": proposals})
+        return results
+
+    def process_batch_prompts(self, prompts_file='prompts.json'):
+        """
+        Process a batch of prompts sequentially from a JSON file.
+        prompts_file: path to JSON file containing list of prompts.
+        Logs each decision (Nova response) for scalability and stress-testing.
+        """
+        try:
+            with open(prompts_file, 'r') as f:
+                prompts = json.load(f)
+        except FileNotFoundError:
+            logger.error(f"Prompts file {prompts_file} not found")
+            return []
+        except json.JSONDecodeError:
+            logger.error(f"Invalid JSON in {prompts_file}")
+            return []
+
+        results = []
+        for i, prompt in enumerate(prompts):
+            logger.info(f"Processing prompt {i+1}/{len(prompts)}: {prompt[:50]}...")
+            nova_response = self.call_nova(prompt)
+            if nova_response:
+                # Log the decision
+                shipment_id = f"batch_prompt_{i+1}"
+                self.audit.log_decision(shipment_id, "nova_response", "completed", {"prompt": prompt, "nova_response": nova_response})
+                results.append({"prompt_index": i+1, "prompt": prompt, "response": nova_response})
+            else:
+                # Log failed
+                shipment_id = f"batch_prompt_{i+1}"
+                self.audit.log_decision(shipment_id, "nova_response", "failed", {"prompt": prompt, "error": "Nova call failed"})
+                results.append({"prompt_index": i+1, "prompt": prompt, "response": None})
+        logger.info(f"Batch processing completed: {len(results)} prompts processed")
+        return results
 
 def main():
     engine = ReasoningEngine()
