@@ -19,10 +19,11 @@ response = client.invoke_model(
 
 # Decode Nova's response
 decoded = response["body"].read().decode("utf-8")
+response_body = json.loads(decoded)
 
 # Save to output.json
 with open("output.json", "w") as f:
-    json.dump(json.loads(decoded), f, indent=2)
+    json.dump(response_body, f, indent=2)
 
 # Print the response
 print("Nova Response:", decoded)
@@ -35,11 +36,15 @@ try:
 except FileNotFoundError:
     ledger = []
 
-# Append new entry
+# Append new entry with expanded metadata
 ledger.append({
     "timestamp": datetime.utcnow().isoformat(),
     "prompt": prompt,
-    "response": decoded
+    "response": decoded,
+    "modelId": "amazon.nova-lite-v1:0",
+    "region": "us-east-1",
+    "stopReason": response_body.get("stopReason"),
+    "usage": response_body.get("usage")
 })
 
 # Save back to audit ledger
