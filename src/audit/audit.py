@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+import boto3
 from datetime import datetime, timezone
 
 logging.basicConfig(level=logging.INFO)
@@ -11,6 +12,31 @@ class AuditLogger:
         self.storage_file = storage_file
         self.ledger = []
         self.load_ledger()
+        self.nova = boto3.client("bedrock-runtime")
+
+    def call_nova(self, prompt):
+        """
+        Call Amazon Nova for generating summaries.
+        """
+        try:
+            response = self.nova.invoke_model(
+                modelId="amazon.nova-pro",
+                body=json.dumps({
+                    "inputText": prompt,
+                    "parameters": {"temperature": 0.7, "maxTokens": 300}
+                })
+            )
+            result = json.loads(response['body'].read())
+            return {
+                'outputText': result.get('outputText', ''),
+                'stopReason': result.get('stopReason'),
+                'usage': result.get('usage', {}),
+                'modelId': "amazon.nova-pro",
+                'region': self.nova.meta.region_name
+            }
+        except Exception as e:
+            logger.error(f"Nova call failed: {e}")
+            return None
 
     def load_ledger(self):
         try:
@@ -41,6 +67,17 @@ class AuditLogger:
             'timestamp': timestamp,
             'previous_hash': previous_hash
         }
+        # Generate Nova-powered compliance summary
+        prompt = f"Generate a compliance-ready summary for this audit log entry: {data}"
+        compliance_summary = self.call_nova(prompt)
+        if compliance_summary:
+            data['compliance_summary'] = compliance_summary['outputText']
+            data['modelId'] = compliance_summary['modelId']
+            data['region'] = compliance_summary['region']
+            data['stopReason'] = compliance_summary['stopReason']
+            data['usage'] = compliance_summary['usage']
+        else:
+            data['compliance_summary'] = "Summary not available"
         current_hash = self._compute_hash(data)
         entry = {
             'data': data,

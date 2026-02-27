@@ -1,52 +1,47 @@
 import boto3
 import json
-from datetime import datetime
+import sys
+import os
 
-# Use your SSO profile
-session = boto3.Session(profile_name="slalom_IsbUsersPS-176766376972")
-client = session.client("bedrock-runtime", region_name="us-east-1")
+# Add src to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-# Read the prompt from input.json
-with open("input.json", "r") as f:
-    body = json.load(f)
+from src.audit.audit import AuditLogger
+from src.notifications.notifications import NotificationManager
 
-prompt = body["messages"][0]["content"][0]["text"]
+def main():
+    # Initialize clients
+    nova_client = boto3.client("bedrock-runtime")
+    audit = AuditLogger()
+    notifications = NotificationManager()
 
-response = client.invoke_model(
-    modelId="amazon.nova-lite-v1:0",
-    body=json.dumps(body)
-)
+    # Example prompt
+    prompt = "Explain the importance of AI in supply chain management."
 
-# Decode Nova's response
-decoded = response["body"].read().decode("utf-8")
-response_body = json.loads(decoded)
+    try:
+        # Call Nova
+        response = nova_client.invoke_model(
+            modelId="amazon.nova-pro",
+            body=json.dumps({
+                "inputText": prompt,
+                "parameters": {"temperature": 0.7, "maxTokens": 300}
+            })
+        )
+        result = json.loads(response['body'].read())
+        output = result.get('outputText', 'No response')
 
-# Save to output.json
-with open("output.json", "w") as f:
-    json.dump(response_body, f, indent=2)
+        # Print response
+        print("Nova Response:")
+        print(output)
 
-# Print the response
-print("Nova Response:", decoded)
+        # Log to audit ledger
+        audit.log_decision("nova_demo", "response_generated", "completed", {"prompt": prompt, "response": output})
 
-# Load existing audit ledger
-ledger_path = "audit_ledger.json"
-try:
-    with open(ledger_path, "r") as f:
-        ledger = json.load(f)
-except FileNotFoundError:
-    ledger = []
+        # Send to Slack
+        notifications.send_message(f"Nova Response: {output}")
 
-# Append new entry with expanded metadata
-ledger.append({
-    "timestamp": datetime.utcnow().isoformat(),
-    "prompt": prompt,
-    "response": decoded,
-    "modelId": "amazon.nova-lite-v1:0",
-    "region": "us-east-1",
-    "stopReason": response_body.get("stopReason"),
-    "usage": response_body.get("usage")
-})
+    except Exception as e:
+        print(f"Error: {e}")
 
-# Save back to audit ledger
-with open(ledger_path, "w") as f:
-    json.dump(ledger, f, indent=2)
+if __name__ == "__main__":
+    main()

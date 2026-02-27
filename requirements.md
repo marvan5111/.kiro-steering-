@@ -14,3 +14,9 @@
 - The system shall record every rerouting decision on a blockchain ledger.
 - The system shall store reasoning traces, shipment IDs, and approval status immutably.
 - The system shall provide an auditor-friendly dashboard to review past decisions.
+
+## Dependencies
+- Flask: For handling Slack interactive component callbacks.
+- requests: For sending HTTP requests to Slack webhooks.
+- boto3: For AWS Bedrock/Nova API calls.
+- Other standard libraries: json, logging, os, sys.

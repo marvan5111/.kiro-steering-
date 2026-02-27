@@ -6,7 +6,7 @@ import os
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from notifications.notifications import NotificationManager
+from notifications.notifications import NotificationManager, slack_interactive, app
 
 class TestNotificationManager(unittest.TestCase):
     def setUp(self):
@@ -68,6 +68,19 @@ class TestNotificationManager(unittest.TestCase):
         manager.handle_approval(payload)
 
         mock_audit.log_decision.assert_called_with("123", "none", "rejected", {"source": "slack"})
+
+    @patch('notifications.notifications.NotificationManager')
+    def test_slack_interactive_callback(self, mock_manager_class):
+        mock_manager = MagicMock()
+        mock_manager_class.return_value = mock_manager
+
+        with patch('notifications.notifications.notification_manager', mock_manager):
+            with app.test_client() as client:
+                payload = '{"actions": [{"value": "{\\"shipment_id\\": \\"123\\", \\"action\\": \\"approve\\"}"}]}'
+                response = client.post('/slack/interactive', data={'payload': payload})
+
+        self.assertEqual(response.status_code, 200)
+        mock_manager.handle_approval.assert_called_with('{"shipment_id": "123", "action": "approve"}')
 
 if __name__ == '__main__':
     unittest.main()
